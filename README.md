@@ -1,57 +1,82 @@
 # ZeroGravity Web Admin
 
-Uma interface administrativa moderna e intuitiva para gerenciar o proxy LLM **ZeroGravity**. Desenvolvido com Next.js 16 e React 19, este dashboard permite o controle total do container Docker, gerenciamento de contas e monitoramento de logs em tempo real.
+A high-performance, technical administrative dashboard designed for orchestrating and managing the **ZeroGravity** LLM proxy ecosystem. Built with Next.js 16 (App Router), React 19, and Dockerode for direct container interaction.
 
-## 🚀 Funcionalidades
+## 🚀 Key Features
 
--   **Dashboard em Tempo Real**: Visualize o status do container e métricas de saúde do proxy.
--   **Controle de Container**: Inicie, pare ou reinicie o container `zerogravity` diretamente pela interface.
--   **Gerenciamento de Contas**: Adicione ou remova contas do ZeroGravity de forma simplificada.
--   **Visualizador de Logs**: Acompanhe os logs do container com suporte a parsing automático de estatísticas e limpeza de caracteres ANSI.
--   **Listagem de Modelos**: Visualize os modelos disponíveis no proxy.
--   **Design Premium**: Interface escura com estética moderna, tipografia refinada (Sora e DM Sans) e efeitos de glassmorphism.
+- **Live Infrastructure Monitoring**: Real-time container status polling and health check verification via proxy internal endpoints.
+- **Direct Container Lifecycle Control**: Atomically start, stop, or restart the `zerogravity` container through the Docker Socket.
+- **Interactive Account Orchestration**: Management of ZeroGravity identities using `zg` CLI abstraction within the container.
+- **Advanced Log Streaming**: Real-time log consumption with automated Docker multiplexed stream demuxing, ANSI code stripping, and statistical analysis.
+- **Premium Design System**: Dark-themed UI utilizing glassmorphism, refined typography (Sora/DM Sans), and standard vanilla CSS variables for architectural consistency.
 
-## 🛠️ Tecnologias
+## 🛠️ Technical Stack
 
--   **Frontend**: Next.js 16 (App Router), React 19, Vanilla CSS.
--   **Backend**: API Routes do Next.js.
--   **Integração**: [Dockerode](https://github.com/apocas/dockerode) para comunicação com o Docker Socket.
--   **Estilização**: Variáveis CSS personalizadas (`--zg-*`) para um design system consistente.
+- **Frontend**: Next.js 16 (App Router), React 19 (Server/Client Hybrid), Vanilla CSS.
+- **Backend**: Node.js/Next.js API Routes.
+- **Infrastructure**: [Dockerode](https://github.com/apocas/dockerode) for Unix Socket communication (`/var/run/docker.sock`).
+- **Data Persistence**: Local filesystem integration for ZeroGravity account configuration.
 
-## 📋 Pré-requisitos
+## 📋 Prerequisites
 
-Para rodar este projeto, você precisa ter:
+- **Node.js 18+**
+- **Docker Engine** running locally with accessible unix socket.
+- **Permissions**: Read/write access to `/var/run/docker.sock`.
+- **Target Container**: A container named `zerogravity` must exist.
 
-1.  **Node.js 18+** instalado.
-2.  **Docker** rodando localmente.
-3.  Permissão de leitura/escrita no socket do Docker (`/var/run/docker.sock`).
-4.  O container do ZeroGravity deve estar nomeado como `zerogravity`.
+## ⚙️ Deployment & Development
 
-## ⚙️ Como Rodar
+1. **Install Dependencies**:
+   ```bash
+   npm install
+   ```
 
-1.  **Instale as dependências:**
-    ```bash
-    npm install
-    ```
+2. **Launch Development Server**:
+   ```bash
+   npm run dev
+   ```
 
-2.  **Inicie o servidor de desenvolvimento:**
-    ```bash
-    npm run dev
-    ```
+3. **Compute Production Build**:
+   ```bash
+   npm run build
+   ```
 
-3.  **Acesse no navegador:**
-    Abra [http://localhost:3000](http://localhost:3000).
+## 🐳 Docker Integration Details
 
-## 📂 Estrutura do Projeto
+The system communicates directly with the Docker Daemon via the Unix Socket. Below are the technical operations performed by the application logic:
 
--   `src/app/api/`: Endpoints para status, logs, ações de container e gerenciamento de contas.
--   `src/lib/docker.js`: Lógica de integração com o Dockerode.
--   `src/lib/accounts.js`: Manipulação do arquivo `accounts.json` do ZeroGravity.
--   `src/components/Dashboard.js`: Componente principal da interface.
+### Container Identification
+The application identifies the target container by scanning all local containers for the exact name `/zerogravity`.
+- **API Reference**: `GET /api/status` calls `docker.listContainers({ all: true })`.
 
-## 🔒 Segurança
+### Lifecycle Management
+Controlled through `POST /api/action`, executing the following `dockerode` primitives:
+- **Start**: `container.start()`
+- **Stop**: `container.stop()`
+- **Restart**: `container.restart()`
 
-O projeto acessa o socket do Docker localmente. Certifique-se de rodar em um ambiente seguro e controlado.
+### Log Stream Processing
+The log viewer (`GET /api/logs`) implements a custom demultiplexer to handle Docker's binary header format (8-byte frames).
+- **Format**: `[1 byte stream type][3 bytes padding][4 bytes payload size][payload]`.
+- **Processing**: The buffer is parsed manually in `src/lib/docker.js:parseMuxedStream()` to strip headers and ANSI escape sequences before delivering clean UTF-8 strings.
+
+### CLI Command Execution
+The system manages accounts by executing commands directly inside the container using the `docker exec` protocol:
+- **Set Account**: `docker exec zerogravity zg accounts set <email>`
+- **Remove Account**: `docker exec zerogravity zg accounts remove <email>`
+- **Extract Tokens**: `docker exec zerogravity zg extract`
+- **List Accounts**: `docker exec zerogravity zg accounts`
+
+## 📂 Project Architecture
+
+- **`src/app/api/`**: Technical endpoints for container lifecycle, log streaming, and CLI execution.
+- **`src/lib/docker.js`**: Low-level Dockerode abstraction layer, including muxed stream parsing and exec handling.
+- **`src/lib/accounts.js`**: I/O handler for the shared `accounts.json` configuration file.
+- **`src/components/Dashboard.js`**: Core client-side orchestrator that handles polling, state management, and real-time visualization.
+
+## 🔒 Security Considerations
+
+This dashboard requires direct access to `/var/run/docker.sock`. By design, any user with access to this socket has root-level control over the host. Ensure this application is deployed within a protected network environment and never exposed to the public internet without an authentication/authorization layer.
 
 ---
-Desenvolvido para facilitar a orquestração do ecossistema ZeroGravity.
+*Optimized for ZeroGravity ecosystem orchestration.*
