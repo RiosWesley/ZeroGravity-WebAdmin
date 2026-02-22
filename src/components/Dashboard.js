@@ -32,6 +32,33 @@ const Icons = {
       <path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6" /><polyline points="15 3 21 3 21 9" /><line x1="10" y1="14" x2="21" y2="3" />
     </svg>
   ),
+  logo: (
+    <svg viewBox="0 0 100 100" className="sidebar-brand-svg" style={{ width: 42, height: 42, filter: 'drop-shadow(0 0 12px var(--zg-primary-glow))' }}>
+      <defs>
+        <linearGradient id="logoGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stopColor="#fff" stopOpacity="0.8" />
+          <stop offset="100%" stopColor="#fff" stopOpacity="0.1" />
+        </linearGradient>
+      </defs>
+      <path
+        d="M20,25 L50,75 L80,25"
+        stroke="url(#logoGrad)"
+        strokeWidth="12"
+        strokeLinecap="square"
+        strokeLinejoin="miter"
+        fill="none"
+      />
+      <path
+        d="M20,25 L50,75 L80,25"
+        stroke="#fff"
+        strokeWidth="1"
+        strokeLinecap="square"
+        strokeLinejoin="miter"
+        fill="none"
+        opacity="0.5"
+      />
+    </svg>
+  )
 };
 
 // ── Helpers ──
@@ -330,12 +357,13 @@ export default function Dashboard() {
 
   if (loading) {
     return (
-      <div style={{ display: 'flex', height: '100vh', alignItems: 'center', justifyContent: 'center' }}>
+      <div style={{ display: 'flex', height: '100vh', alignItems: 'center', justifyContent: 'center', background: '#000' }}>
         <div style={{ textAlign: 'center' }}>
-          <div style={{ fontSize: '1.4rem', fontFamily: 'var(--font-heading)', fontWeight: 700, background: 'linear-gradient(135deg, var(--zg-primary), var(--zg-accent-teal))', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
-            ZeroGravity
+          <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '1.5rem' }}>{Icons.logo}</div>
+          <div style={{ fontSize: '1rem', fontFamily: 'var(--font-heading)', fontWeight: 800, color: 'var(--zg-primary)', letterSpacing: '0.2em', textTransform: 'uppercase' }}>
+            Initializing
           </div>
-          <div style={{ color: 'var(--zg-text-muted)', marginTop: '0.4rem', fontSize: '0.85rem' }}>Loading control panel...</div>
+          <div style={{ color: 'var(--zg-text-muted)', marginTop: '0.6rem', fontSize: '0.7rem', letterSpacing: '0.1em', textTransform: 'uppercase' }}>ZeroGravity Systems Core</div>
         </div>
       </div>
     );
@@ -430,8 +458,14 @@ export default function Dashboard() {
         {/* ── Sidebar ── */}
         <aside className="sidebar">
           <div className="sidebar-brand">
-            <h1>ZeroGravity</h1>
-            <p>LLM Proxy Admin</p>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.25rem' }}>
+              {Icons.logo}
+              <div>
+                <h1 style={{ marginBottom: 0 }}>Zero</h1>
+                <h1 style={{ marginTop: '-4px', opacity: 0.6 }}>Gravity</h1>
+              </div>
+            </div>
+            <p>Admin Core v2.0</p>
           </div>
 
           <nav className="sidebar-nav">
@@ -467,12 +501,12 @@ export default function Dashboard() {
 
           <div className="sidebar-status">
             <div className="sidebar-status-row">
-              <span className="status-dot" style={{ backgroundColor: stateBadgeColor, boxShadow: `0 0 8px ${stateBadgeColor}`, flexShrink: 0 }} />
-              Container: <strong style={{ color: stateBadgeColor }}>{containerState || 'unknown'}</strong>
+              <span className="status-dot" style={{ backgroundColor: stateBadgeColor, boxShadow: isUp ? `0 0 10px ${stateBadgeColor}` : 'none' }} />
+              SYS: <strong style={{ color: stateBadgeColor, textTransform: 'uppercase' }}>{containerState || 'offline'}</strong>
             </div>
             <div className="sidebar-status-row">
-              <span className="status-dot" style={{ backgroundColor: zgHealth === 'healthy' ? 'var(--zg-success)' : 'var(--zg-warning)', boxShadow: `0 0 8px ${zgHealth === 'healthy' ? 'var(--zg-success)' : 'var(--zg-warning)'}`, flexShrink: 0 }} />
-              Proxy: <strong>{zgHealth || '?'}</strong>
+              <span className="status-dot" style={{ backgroundColor: zgHealth === 'healthy' ? 'var(--zg-success)' : 'var(--zg-warning)', boxShadow: zgHealth === 'healthy' ? '0 0 10px var(--zg-success)' : 'none' }} />
+              NET: <strong style={{ textTransform: 'uppercase' }}>{zgHealth || 'pending'}</strong>
             </div>
           </div>
         </aside>
